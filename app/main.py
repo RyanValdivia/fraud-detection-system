@@ -18,7 +18,7 @@ def health():
 
 @app.post("/predict", response_model=FraudPrediction)
 def predict(transaction: TransactionRequest):
-    features = build_feature_vector(transaction)
+    features, distance_km = build_feature_vector(transaction)
     probability = fraud_model.predict_proba(features)
     decision = fraud_model.decide(probability)
 
@@ -26,4 +26,5 @@ def predict(transaction: TransactionRequest):
         transaction_id=transaction.transaction_id,
         fraud_probability=round(probability, 4),
         decision=decision,
+        distance_km=round(distance_km, 2),
     )

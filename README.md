@@ -6,13 +6,19 @@ API que analiza transacciones en tiempo real y devuelve una probabilidad de frau
 Compra → Feature Engineering → Modelo ML → Probabilidad de fraude → Decisión (permitir / revisar / bloquear)
 ```
 
+## Dataset
+
+**Sparkov Fraud Dataset** ([kartik2112/fraud-detection](https://www.kaggle.com/datasets/kartik2112/fraud-detection), Kaggle): ~1.3M transacciones simuladas con datos ricos por transacción (comercio, categoría, geolocalización de usuario y comercio, demografía del titular). Ver `data/README.md` para instrucciones de descarga.
+
+**Feature diferenciador**: distancia geográfica (haversine) entre la ubicación habitual del usuario y el comercio donde ocurre la compra en el momento de la transacción — señal clásica de "viaje imposible" usada en detección de fraude real, combinada con velocidad de transacciones (Redis) y patrones por categoría/hora/edad.
+
 ## Stack
 
 - **API**: FastAPI
 - **Base de datos**: PostgreSQL
-- **Cache / feature store rápido**: Redis
+- **Cache / feature store rápido**: Redis (contador de velocidad de transacciones por tarjeta)
 - **Contenedores**: Docker / Docker Compose
-- **Modelos ML**: XGBoost, LightGBM, Random Forest (scikit-learn)
+- **Modelos ML**: XGBoost, LightGBM, Random Forest — se entrenan los tres y se guarda el de mejor *average precision* (métrica correcta dado el fuerte desbalance fraude/no-fraude)
 
 ## Estructura
 
@@ -58,10 +64,34 @@ API disponible en `http://localhost:8000/docs`.
 ## Entrenar el modelo
 
 ```bash
+# 1. Descargar dataset (ver data/README.md)
+# 2. Entrenar (compara XGBoost / LightGBM / RandomForest, guarda el mejor)
 python ml/train.py
 ```
 
 Genera el artefacto en `ml/models/model.pkl`, que la API carga al iniciar.
+
+## Ejemplo de request
+
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "tx_001",
+    "cc_num": "4111111111111111",
+    "amt": 120.50,
+    "merchant": "fraud_Kirlin and Sons",
+    "category": "shopping_pos",
+    "gender": "F",
+    "dob": "1990-05-14",
+    "city_pop": 50000,
+    "lat": -12.0464,
+    "long": -77.0428,
+    "merch_lat": -12.10,
+    "merch_long": -77.05,
+    "trans_time": "2026-08-05T14:30:00"
+  }'
+```
 
 ## Endpoints principales
 
@@ -80,7 +110,7 @@ Genera el artefacto en `ml/models/model.pkl`, que la API carga al iniciar.
 
 ## Roadmap
 
-- [ ] Entrenamiento con dataset público (ej. Kaggle Credit Card Fraud)
 - [ ] Endpoint de reentrenamiento
 - [ ] Monitoreo de drift del modelo
 - [ ] Autenticación de API (API Key / JWT)
+- [ ] Persistir cada predicción en PostgreSQL (tabla `transactions`)

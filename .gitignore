@@ -5,6 +5,8 @@ venv/
 .env
 *.pkl
 *.joblib
+data/*.csv
+data/*.zip
 .pytest_cache/
 .vscode/
 .idea/
