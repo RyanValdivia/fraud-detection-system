@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     fraud_block_threshold: float = 0.85
     fraud_review_threshold: float = 0.5
 
+    api_key: str = "fraud-dev-key-123"
+
     @property
     def database_url(self) -> str:
         return (

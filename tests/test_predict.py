@@ -5,7 +5,7 @@ from app.main import app
 client = TestClient(app)
 
 SAMPLE_TRANSACTION = {
-    "transaction_id": "tx_001",
+    "transaction_id": "test-integration-001",
     "cc_num": "4111111111111111",
     "amt": 120.50,
     "merchant": "fraud_Kirlin and Sons",
@@ -20,12 +20,21 @@ SAMPLE_TRANSACTION = {
     "trans_time": "2026-08-05T14:30:00",
 }
 
+API_KEY_HEADERS = {"x-api-key": "fraud-dev-key-123"}
+
 
 def test_predict_returns_valid_decision():
-    response = client.post("/predict", json=SAMPLE_TRANSACTION)
+    response = client.post(
+        "/predict",
+        json=SAMPLE_TRANSACTION,
+        headers=API_KEY_HEADERS,
+    )
+
     assert response.status_code == 200
+
     body = response.json()
-    assert body["transaction_id"] == "tx_001"
+
+    assert body["transaction_id"] == "test-integration-001"
     assert 0.0 <= body["fraud_probability"] <= 1.0
     assert body["decision"] in {"allow", "review", "block"}
     assert body["distance_km"] >= 0
