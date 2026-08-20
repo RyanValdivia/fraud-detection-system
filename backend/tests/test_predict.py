@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -5,7 +7,7 @@ from app.main import app
 client = TestClient(app)
 
 SAMPLE_TRANSACTION = {
-    "transaction_id": "test-integration-001",
+    "transaction_id": f"test-integration-{uuid.uuid4()}",
     "cc_num": "4111111111111111",
     "amt": 120.50,
     "merchant": "fraud_Kirlin and Sons",
@@ -34,7 +36,7 @@ def test_predict_returns_valid_decision():
 
     body = response.json()
 
-    assert body["transaction_id"] == "test-integration-001"
+    assert body["transaction_id"] == SAMPLE_TRANSACTION["transaction_id"]
     assert 0.0 <= body["fraud_probability"] <= 1.0
     assert body["decision"] in {"allow", "review", "block"}
     assert body["distance_km"] >= 0

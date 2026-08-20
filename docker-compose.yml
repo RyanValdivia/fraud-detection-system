@@ -1,19 +1,18 @@
-version: "3.9"
-
 services:
   api:
-    build: .
+    build: ./backend
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       PYTHONPATH: /code
     depends_on:
       - db
       - redis
     volumes:
-      - ./ml/models:/code/ml/models
+      - ./backend/ml/models:/code/ml/models
+      - ./backend/data:/code/data
 
   db:
     image: postgres:16-alpine
@@ -30,6 +29,15 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
 
 volumes:
   postgres_data:

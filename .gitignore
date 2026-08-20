@@ -3,11 +3,19 @@ __pycache__/
 .venv/
 venv/
 .env
+.env.local
 *.pkl
 *.joblib
-data/*.csv
-data/*.zip
+backend/data/*.csv
+backend/data/*.zip
 .pytest_cache/
 .vscode/
 .idea/
 *.log
+
+# frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
